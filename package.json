@@ -1,0 +1,35 @@
+{
+  "name": "channeljs",
+  "version": "1.0.0",
+  "type": "module",
+  "source": "src/index.ts",
+  "exports": {
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.modern.js"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.module.js",
+  "unpkg": "./dist/index.umd.js",
+  "scripts": {
+    "build": "microbundle",
+    "dev": "microbundle watch"
+  },
+  "author": "Klodian Imeri",
+  "license": "Apache-2.0",
+  "description": "Javascript channel like communication.",
+  "keywords": [
+    "Observable",
+    "Observables",
+    "Streams",
+    "Stream",
+    "Promise",
+    "Channel",
+    "Channels",
+    "ES6"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "microbundle": "^0.15.1",
+    "typescript": "^5.8.3"
+  }
+}

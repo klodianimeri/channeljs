@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "dist/es",
+    "noEmit": false,
+    "baseUrl": ".",
+    "removeComments": true,
+    "lib": [
+      "es2024.Promise",
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/dev/*"
+  ]
+}
