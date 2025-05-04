@@ -1,11 +1,21 @@
+if (typeof Promise.withResolvers === "undefined") {
+    Promise.withResolvers = <T>() => {
+        let resolve!: (value: T | PromiseLike<T>) => void;
+        let reject!: (reason?: unknown) => void;
+        const promise = new Promise<T>((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+        return { promise, resolve, reject };
+    };
+}
+
 export class Channel<T = any> {
     #items: Set<Array<PromiseWithResolvers<IteratorResult<T>>>> = new Set<Array<PromiseWithResolvers<IteratorResult<T>>>>();
 
-    constructor() { }
-
     send(data: T) {
         for (const items of this.#items) {
-            items.push(Channel.#withResolvers<T>());
+            items.push(Promise.withResolvers<IteratorResult<T>>());
             items[items.length - 2].resolve({ done: false, value: data });
         }
     }
@@ -17,22 +27,13 @@ export class Channel<T = any> {
         }
     }
 
-    static #withResolvers<T>() {
-        let resolve, reject;
-        const promise = new Promise<IteratorResult<T>>((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
-        return { resolve, reject, promise }
-    }
-
     [Symbol.asyncIterator]() {
+        let items: Array<PromiseWithResolvers<any>> = new Array<PromiseWithResolvers<any>>(Promise.withResolvers<IteratorResult<T>>());
         let channel = this;
-        let items: Array<PromiseWithResolvers<any>> = new Array<PromiseWithResolvers<any>>(Channel.#withResolvers<T>());
         channel.#items.add(items);
 
         return {
-            async next(): Promise<IteratorYieldResult<T>> {
+            async next(): Promise<IteratorResult<T>> {
                 if (items.length > 1) items.shift();
                 return items[0].promise;
             },

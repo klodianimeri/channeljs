@@ -1,10 +1,9 @@
 export declare class Channel<T = any> {
     #private;
-    constructor();
     send(data: T): void;
     close(): void;
     [Symbol.asyncIterator](): {
-        next(): Promise<IteratorYieldResult<T>>;
+        next(): Promise<IteratorResult<T>>;
         return(value?: any): Promise<IteratorReturnResult<T>>;
     };
 }
