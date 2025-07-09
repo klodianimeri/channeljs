@@ -10,7 +10,7 @@ if (typeof Promise.withResolvers === "undefined") {
     };
 }
 
-export class Channel<T = any> {
+export class Channel<T = any, TReturn = any> {
     #items: Set<Array<PromiseWithResolvers<IteratorResult<T>>>> = new Set<Array<PromiseWithResolvers<IteratorResult<T>>>>();
 
     send(data: T) {
@@ -37,7 +37,7 @@ export class Channel<T = any> {
                 if (items.length > 1) items.shift();
                 return items[0].promise;
             },
-            return(value?: any): Promise<IteratorReturnResult<T>> {
+            return(value?: TReturn): Promise<IteratorReturnResult<TReturn>> {
                 channel.#items.delete(items);
                 return Promise.resolve({ done: true, value: value });
             }
