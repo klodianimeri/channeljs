@@ -60,7 +60,7 @@ channel.close();
 
 ## Browser
 
-https://unpkg.com/@klodianimeri/channeljs@^1/
+https://unpkg.com/@klodianimeri/channeljs@^1/dist/index.umd.js
 
 The global namespace is channeljs:
 
