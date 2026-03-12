@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
     "sourceMap": true,
@@ -14,10 +14,12 @@
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/channel.test.ts"
   ],
   "exclude": [
     "node_modules",
+    "tests",
     "src/dev/*"
   ]
 }

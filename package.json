@@ -1,6 +1,6 @@
 {
   "name": "@klodianimeri/channeljs",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "source": "src/index.ts",
   "exports": {
@@ -17,24 +17,31 @@
   },
   "scripts": {
     "build": "microbundle",
-    "dev": "microbundle watch"
+    "dev": "microbundle watch",
+    "start": "tsc --watch",
+    "test": "jest"
   },
   "author": "Klodian Imeri",
   "license": "Apache-2.0",
-  "description": "Javascript channel like communication.",
+  "description": "Javascript channel like async communication.",
   "keywords": [
-    "Observable",
-    "Observables",
-    "Streams",
-    "Stream",
-    "Promise",
-    "Channel",
-    "Channels",
-    "ES6"
+    "channel",
+    "channels",
+    "stream",
+    "streams",
+    "observable",
+    "observables",
+    "promise",
+    "publish",
+    "subscribe",
+    "es6"
   ],
   "devDependencies": {
-    "@types/node": "^22.14.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.4.0",
+    "jest": "^30.2.0",
     "microbundle": "^0.15.1",
-    "typescript": "^5.8.3"
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
   }
 }

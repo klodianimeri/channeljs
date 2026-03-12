@@ -1,6 +1,8 @@
 # ChannelJS
 
-Simple and lightweight async communications using channels. Minimal single class code.
+Simple and lightweight **unbuffered**, **multicast** async communication using channels. 
+
+Minimal single class code under 1KB.
 
 Works in browser and node.
 
@@ -71,12 +73,12 @@ const { Channel } = channeljs;
 ## Build Statistics
 
 ```
-    941 B: index.cjs.gz
-    807 B: index.cjs.br
-    500 B: index.modern.js.gz
-    410 B: index.modern.js.br
-    944 B: index.module.js.gz
-    812 B: index.module.js.br
-   1010 B: index.umd.js.gz
-    872 B: index.umd.js.br
+    938 B: index.cjs.gz
+    809 B: index.cjs.br
+    541 B: index.modern.js.gz
+    448 B: index.modern.js.br
+    936 B: index.module.js.gz
+    809 B: index.module.js.br
+   1004 B: index.umd.js.gz
+    891 B: index.umd.js.br
  ```

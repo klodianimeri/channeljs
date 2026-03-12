@@ -1,3 +1,7 @@
+type ResolveType<T = any> = (value: T | PromiseLike<T>) => void;
+
+type ItemType<T = any, TReturn = any> = IteratorResult<T, TReturn> | ResolveType<IteratorResult<T, TReturn>>;
+
 if (typeof Promise.withResolvers === "undefined") {
     Promise.withResolvers = <T>() => {
         let resolve!: (value: T | PromiseLike<T>) => void;
@@ -11,31 +15,42 @@ if (typeof Promise.withResolvers === "undefined") {
 }
 
 export class Channel<T = any, TReturn = any> {
-    #items: Set<Array<PromiseWithResolvers<IteratorResult<T>>>> = new Set<Array<PromiseWithResolvers<IteratorResult<T>>>>();
+    #items: Set<Array<ItemType<T, TReturn>>> = new Set<Array<ItemType<T, TReturn>>>();
+
+    #push(ir: IteratorResult<T, TReturn>) {
+        for (const items of this.#items) {
+            if (items.length === 1 && typeof items[0] === 'function') {
+                (items.shift() as ResolveType<IteratorResult<T, TReturn>>)(ir);
+                continue;
+            }
+
+            items.push(ir);
+        }
+    }
 
     send(data: T) {
-        for (const items of this.#items) {
-            items.push(Promise.withResolvers<IteratorResult<T>>());
-            items[items.length - 2].resolve({ done: false, value: data });
-        }
+        this.#push({ done: false, value: data });
     }
 
     close() {
-        for (const items of this.#items) {
-            items[items.length - 1].resolve({ done: true, value: undefined });
-            this.#items.delete(items);
-        }
+        this.#push({ done: true, value: undefined });
+        this.#items.clear();
     }
 
     [Symbol.asyncIterator]() {
-        let items: Array<PromiseWithResolvers<any>> = new Array<PromiseWithResolvers<any>>(Promise.withResolvers<IteratorResult<T>>());
+        let items: Array<ItemType<T, TReturn>> = new Array<ItemType<T, TReturn>>();
         let channel = this;
         channel.#items.add(items);
 
         return {
-            async next(): Promise<IteratorResult<T>> {
-                if (items.length > 1) items.shift();
-                return items[0].promise;
+            next(): Promise<IteratorResult<T>> {
+                if (items.length) return items.shift() as any;
+
+                const { promise, resolve } = Promise.withResolvers<IteratorResult<T>>();
+
+                items.push(resolve);
+
+                return promise;
             },
             return(value?: TReturn): Promise<IteratorReturnResult<TReturn>> {
                 channel.#items.delete(items);
