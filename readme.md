@@ -7,26 +7,26 @@ ChannelJS is an ultra-lightweight, zero-dependency communication bus for JavaScr
 
 ## Why ChannelJS?
 
-Fast-Path Execution: Boosts throughput by 25%+ by resolving synchronously when data is available—bypassing the microtask queue and avoiding unnecessary Promise allocations.
+**Fast-Path Execution:** Boosts throughput by 25%+ by resolving synchronously when data is available—bypassing the microtask queue and avoiding unnecessary Promise allocations.
 
-True Multicast: A single send() call efficiently broadcasts messages to hundreds of concurrent for await consumers.
+**True Multicast:** A single send() call efficiently broadcasts messages to hundreds of concurrent for await consumers.
 
-Zero-Management Memory: Features built-in automatic cleanup via the AsyncIterator.return() protocol. No more manual removeListener calls or memory leaks.
+**Zero-Management Memory:** Features built-in automatic cleanup via the AsyncIterator.return() protocol. No more manual removeListener calls or memory leaks.
 
-Nano-Scale Footprint: A single, optimized class under 1KB. Perfect for microservices, edge computing, and performance-critical browser apps.
+**Nano-Scale Footprint:** A single, optimized class under 1KB. Perfect for microservices, edge computing, and performance-critical browser apps.
 
-Universal Compatibility: Works seamlessly in both Node.js and modern browsers.
+**Universal Compatibility:** Works seamlessly in both Node.js and modern browsers.
 
 
 ## Key Features
 
-Unbuffered Multicast: Real-time data delivery to all active listeners.
+**Unbuffered Multicast:** Real-time data delivery to all active listeners.
 
-Native Async Iteration: Use standard for await...of loops for a clean, readable API.
+**Native Async Iteration:** Use standard for await...of loops for a clean, readable API.
 
-Microtask Optimized: Designed to minimize the "Async Tax" on low-end hardware.
+**Microtask Optimized:** Designed to minimize the "Async Tax" on low-end hardware.
 
-Polyfilled Safety: Includes a lightweight Promise.withResolvers polyfill for older environments.
+**Polyfilled Safety:** Includes a lightweight Promise.withResolvers polyfill for older environments.
 
 
 ## Installation
