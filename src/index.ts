@@ -43,8 +43,8 @@ export class Channel<T = any, TReturn = any> {
         channel.#items.add(items);
 
         return {
-            next(): Promise<IteratorResult<T>> {
-                if (items.length) return items.shift() as any;
+            next(): IteratorResult<T> | Promise<IteratorResult<T>> {
+                if (items.length) return items.shift() as IteratorResult<T>;
 
                 const { promise, resolve } = Promise.withResolvers<IteratorResult<T>>();
 
