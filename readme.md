@@ -2,7 +2,7 @@
 
 A lightweight, zero-dependency, pull-based multicast async channel for JavaScript and TypeScript. Built on native `for await...of` iteration with O(1) cursor queue draining and configurable lifecycle modes.
 
-- **Zero Dependencies:** Tiny single-class implementation (~690 B gzipped) with full TypeScript types.
+- **Zero Dependencies:** Tiny single-class implementation (~1 kB gzipped) with full TypeScript types.
 - **Native Multicast:** Fan out messages to N concurrent `for await...of` consumers without `.tee()` cloning overhead.
 - **Cross-Runtime Fast:** Up to **76.3x faster** subscriber churn than `events.on()`, **27.6x faster** than `ReadableStream.tee()`, and **3x faster** than `PassThrough` pipelines across Node, Deno, Bun.
 - **Automatic Cleanup:** Breaking out of a `for await...of` loop immediately unsubscribes the consumer without memory leaks.
