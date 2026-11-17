@@ -1,25 +1,29 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "sourceMap": true,
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2022",
+      "ES2018.AsyncIterable",
+      "ES2024.Promise"
+    ],
     "rootDir": "src",
     "outDir": "dist/es",
-    "noEmit": false,
-    "baseUrl": ".",
-    "removeComments": true,
-    "lib": [
-      "es2024.Promise",
-    ]
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "removeComments": false
   },
   "include": [
-    "src/**/*",
-    "tests/channel.test.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
+    "dist",
     "tests",
+    "bench",
     "src/dev/*"
   ]
 }

@@ -1,2 +1,133 @@
-function e(e,r){(null==r||r>e.length)&&(r=e.length);for(var t=0,n=Array(r);t<r;t++)n[t]=e[t];return n}function r(e,r){if(!{}.hasOwnProperty.call(e,r))throw new TypeError("attempted to use private field on non-instance");return e}var t=0;function n(e){return"__private_"+t+++"_"+e}void 0===Promise.withResolvers&&(Promise.withResolvers=function(){var e,r;return{promise:new Promise(function(t,n){e=t,r=n}),resolve:e,reject:r}});var o=/*#__PURE__*/n("items"),i=/*#__PURE__*/n("push");function a(t){for(var n,i=function(r){var t="undefined"!=typeof Symbol&&r[Symbol.iterator]||r["@@iterator"];if(t)return(t=t.call(r)).next.bind(t);if(Array.isArray(r)||(t=function(r,t){if(r){if("string"==typeof r)return e(r,t);var n={}.toString.call(r).slice(8,-1);return"Object"===n&&r.constructor&&(n=r.constructor.name),"Map"===n||"Set"===n?Array.from(r):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?e(r,t):void 0}}(r))){t&&(r=t);var n=0;return function(){return n>=r.length?{done:!0}:{done:!1,value:r[n++]}}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}(r(this,o)[o]);!(n=i()).done;){var a=n.value;1!==a.length||"function"!=typeof a[0]?a.push(t):a.shift()(t)}}exports.Channel=/*#__PURE__*/function(){function e(){Object.defineProperty(this,i,{value:a}),Object.defineProperty(this,o,{writable:!0,value:new Set})}var t=e.prototype;return t.send=function(e){r(this,i)[i]({done:!1,value:e})},t.close=function(){r(this,i)[i]({done:!0,value:void 0}),r(this,o)[o].clear()},t[Symbol.asyncIterator]=function(){var e=new Array,t=this;return r(t,o)[o].add(e),{next:function(){if(e.length)return e.shift();var r=Promise.withResolvers(),t=r.promise;return e.push(r.resolve),t},return:function(n){return r(t,o)[o].delete(e),Promise.resolve({done:!0,value:n})}}},e}();
+Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+// src/index.ts
+if (typeof Promise.withResolvers === "undefined") Promise.withResolvers = () => {
+	let resolve;
+	let reject;
+	return {
+		promise: new Promise((res, rej) => {
+			resolve = res;
+			reject = rej;
+		}),
+		resolve,
+		reject
+	};
+};
+var ChannelClosedError = class extends Error {
+	constructor(message = "Cannot perform operation on a closed channel") {
+		super(message);
+		this.name = "ChannelClosedError";
+	}
+};
+var Channel = class {
+	#consumers = /* @__PURE__ */ new Set();
+	#closed = false;
+	#closeValue = void 0;
+	#mode;
+	constructor(options = {}) {
+		this.#mode = options.mode ?? "raw";
+	}
+	get closed() {
+		return this.#closed;
+	}
+	get mode() {
+		return this.#mode;
+	}
+	#push(ir) {
+		for (const consumer of this.#consumers) if (consumer.resolve !== null) {
+			const res = consumer.resolve;
+			consumer.resolve = null;
+			res(ir);
+		} else consumer.buffer.push(ir);
+	}
+	send(data) {
+		if (this.#closed) {
+			if (this.#mode === "strict") throw new ChannelClosedError("Cannot send to a closed channel");
+			if (this.#mode === "safe") return;
+		}
+		this.#push({
+			done: false,
+			value: data
+		});
+	}
+	close(value) {
+		if (this.#closed) {
+			if (this.#mode === "strict") throw new ChannelClosedError("Channel is already closed");
+			if (this.#mode === "safe") return;
+		}
+		this.#closed = true;
+		this.#closeValue = value;
+		this.#push({
+			done: true,
+			value
+		});
+		this.#consumers.clear();
+	}
+	[Symbol.asyncIterator]() {
+		if (this.#closed && this.#mode !== "raw") {
+			const closeValue = this.#closeValue;
+			return {
+				[Symbol.asyncIterator]() {
+					return this;
+				},
+				next() {
+					return {
+						done: true,
+						value: closeValue
+					};
+				},
+				return(value) {
+					return Promise.resolve({
+						done: true,
+						value
+					});
+				},
+				throw(e) {
+					return Promise.reject(e);
+				}
+			};
+		}
+		const channel = this;
+		const consumer = {
+			buffer: [],
+			head: 0,
+			resolve: null
+		};
+		this.#consumers.add(consumer);
+		return {
+			[Symbol.asyncIterator]() {
+				return this;
+			},
+			next() {
+				if (consumer.head < consumer.buffer.length) {
+					const ir = consumer.buffer[consumer.head];
+					consumer.buffer[consumer.head++] = void 0;
+					if (consumer.head === consumer.buffer.length) {
+						consumer.buffer.length = 0;
+						consumer.head = 0;
+					}
+					return ir;
+				}
+				const { promise, resolve } = Promise.withResolvers();
+				consumer.resolve = resolve;
+				return promise;
+			},
+			return(value) {
+				channel.#consumers.delete(consumer);
+				consumer.buffer.length = 0;
+				return Promise.resolve({
+					done: true,
+					value
+				});
+			},
+			throw(e) {
+				channel.#consumers.delete(consumer);
+				consumer.buffer.length = 0;
+				return Promise.reject(e);
+			}
+		};
+	}
+};
+
+exports.Channel = Channel;
+exports.ChannelClosedError = ChannelClosedError;
 //# sourceMappingURL=index.cjs.map

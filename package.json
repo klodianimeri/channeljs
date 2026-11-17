@@ -1,25 +1,53 @@
 {
   "name": "@klodianimeri/channeljs",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "type": "module",
-  "source": "src/index.ts",
-  "exports": {
-    "require": "./dist/index.cjs",
-    "default": "./dist/index.modern.js"
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
   },
   "main": "./dist/index.cjs",
-  "module": "./dist/index.module.js",
+  "module": "./dist/index.js",
   "unpkg": "./dist/index.umd.js",
+  "jsdelivr": "./dist/index.umd.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./es6": {
+      "require": {
+        "types": "./dist/es6/index.d.cts",
+        "default": "./dist/es6/index.cjs"
+      },
+      "import": {
+        "types": "./dist/es6/index.d.ts",
+        "default": "./dist/es6/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/klodianimeri/channeljs"
+    "url": "git+https://github.com/klodianimeri/channeljs.git"
   },
   "scripts": {
-    "build": "microbundle",
-    "dev": "microbundle watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "start": "tsc --watch",
-    "test": "jest"
+    "test": "node --test tests/*.test.ts",
+    "prepublishOnly": "npm run build",
+    "lint:package": "publint"
   },
   "author": "Klodian Imeri",
   "license": "Apache-2.0",
@@ -38,10 +66,10 @@
   ],
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.4.0",
-    "jest": "^30.2.0",
-    "microbundle": "^0.15.1",
-    "ts-jest": "^29.4.6",
-    "typescript": "^5.9.3"
+    "@types/node": "^26.6.6",
+    "mitata": "^1.0.34",
+    "publint": "^0.3.25",
+    "tsdown": "^0.23.7",
+    "typescript": "^7.0.2"
   }
 }

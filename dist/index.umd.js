@@ -1,2 +1,139 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e||self).channeljs={})}(this,function(e){function t(e,t){(null==t||t>e.length)&&(t=e.length);for(var r=0,n=Array(t);r<t;r++)n[r]=e[r];return n}function r(e,t){if(!{}.hasOwnProperty.call(e,t))throw new TypeError("attempted to use private field on non-instance");return e}var n=0;function o(e){return"__private_"+n+++"_"+e}void 0===Promise.withResolvers&&(Promise.withResolvers=function(){var e,t;return{promise:new Promise(function(r,n){e=r,t=n}),resolve:e,reject:t}});var i=/*#__PURE__*/o("items"),a=/*#__PURE__*/o("push");function u(e){for(var n,o=function(e){var r="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(r)return(r=r.call(e)).next.bind(r);if(Array.isArray(e)||(r=function(e,r){if(e){if("string"==typeof e)return t(e,r);var n={}.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?t(e,r):void 0}}(e))){r&&(e=r);var n=0;return function(){return n>=e.length?{done:!0}:{done:!1,value:e[n++]}}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}(r(this,i)[i]);!(n=o()).done;){var a=n.value;1!==a.length||"function"!=typeof a[0]?a.push(e):a.shift()(e)}}e.Channel=/*#__PURE__*/function(){function e(){Object.defineProperty(this,a,{value:u}),Object.defineProperty(this,i,{writable:!0,value:new Set})}var t=e.prototype;return t.send=function(e){r(this,a)[a]({done:!1,value:e})},t.close=function(){r(this,a)[a]({done:!0,value:void 0}),r(this,i)[i].clear()},t[Symbol.asyncIterator]=function(){var e=new Array,t=this;return r(t,i)[i].add(e),{next:function(){if(e.length)return e.shift();var t=Promise.withResolvers(),r=t.promise;return e.push(t.resolve),r},return:function(n){return r(t,i)[i].delete(e),Promise.resolve({done:!0,value:n})}}},e}()});
+(function(global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ?  factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory((global.channeljs = {})));
+})(this, function(exports) {
+Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+// src/index.ts
+	if (typeof Promise.withResolvers === "undefined") Promise.withResolvers = () => {
+		let resolve;
+		let reject;
+		return {
+			promise: new Promise((res, rej) => {
+				resolve = res;
+				reject = rej;
+			}),
+			resolve,
+			reject
+		};
+	};
+	var ChannelClosedError = class extends Error {
+		constructor(message = "Cannot perform operation on a closed channel") {
+			super(message);
+			this.name = "ChannelClosedError";
+		}
+	};
+	var Channel = class {
+		#consumers = /* @__PURE__ */ new Set();
+		#closed = false;
+		#closeValue = void 0;
+		#mode;
+		constructor(options = {}) {
+			this.#mode = options.mode ?? "raw";
+		}
+		get closed() {
+			return this.#closed;
+		}
+		get mode() {
+			return this.#mode;
+		}
+		#push(ir) {
+			for (const consumer of this.#consumers) if (consumer.resolve !== null) {
+				const res = consumer.resolve;
+				consumer.resolve = null;
+				res(ir);
+			} else consumer.buffer.push(ir);
+		}
+		send(data) {
+			if (this.#closed) {
+				if (this.#mode === "strict") throw new ChannelClosedError("Cannot send to a closed channel");
+				if (this.#mode === "safe") return;
+			}
+			this.#push({
+				done: false,
+				value: data
+			});
+		}
+		close(value) {
+			if (this.#closed) {
+				if (this.#mode === "strict") throw new ChannelClosedError("Channel is already closed");
+				if (this.#mode === "safe") return;
+			}
+			this.#closed = true;
+			this.#closeValue = value;
+			this.#push({
+				done: true,
+				value
+			});
+			this.#consumers.clear();
+		}
+		[Symbol.asyncIterator]() {
+			if (this.#closed && this.#mode !== "raw") {
+				const closeValue = this.#closeValue;
+				return {
+					[Symbol.asyncIterator]() {
+						return this;
+					},
+					next() {
+						return {
+							done: true,
+							value: closeValue
+						};
+					},
+					return(value) {
+						return Promise.resolve({
+							done: true,
+							value
+						});
+					},
+					throw(e) {
+						return Promise.reject(e);
+					}
+				};
+			}
+			const channel = this;
+			const consumer = {
+				buffer: [],
+				head: 0,
+				resolve: null
+			};
+			this.#consumers.add(consumer);
+			return {
+				[Symbol.asyncIterator]() {
+					return this;
+				},
+				next() {
+					if (consumer.head < consumer.buffer.length) {
+						const ir = consumer.buffer[consumer.head];
+						consumer.buffer[consumer.head++] = void 0;
+						if (consumer.head === consumer.buffer.length) {
+							consumer.buffer.length = 0;
+							consumer.head = 0;
+						}
+						return ir;
+					}
+					const { promise, resolve } = Promise.withResolvers();
+					consumer.resolve = resolve;
+					return promise;
+				},
+				return(value) {
+					channel.#consumers.delete(consumer);
+					consumer.buffer.length = 0;
+					return Promise.resolve({
+						done: true,
+						value
+					});
+				},
+				throw(e) {
+					channel.#consumers.delete(consumer);
+					consumer.buffer.length = 0;
+					return Promise.reject(e);
+				}
+			};
+		}
+	};
+
+exports.Channel = Channel;
+exports.ChannelClosedError = ChannelClosedError;
+});
 //# sourceMappingURL=index.umd.js.map
